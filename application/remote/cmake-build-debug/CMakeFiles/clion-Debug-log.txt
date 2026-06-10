@@ -1,0 +1,4 @@
+"D:\CLion\CLion 2023.2.2\bin\cmake\win\x64\bin\cmake.exe" -DCMAKE_BUILD_TYPE=Debug "-DCMAKE_MAKE_PROGRAM=D:/CLion/CLion 2023.2.2/bin/ninja/win/x64/ninja.exe" -G Ninja -S E:\MA\files\Development-Board-C-Examples-master\14.CAN\application\remote -B E:\MA\files\Development-Board-C-Examples-master\14.CAN\application\remote\cmake-build-debug
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: E:/MA/files/Development-Board-C-Examples-master/14.CAN/application/remote/cmake-build-debug
