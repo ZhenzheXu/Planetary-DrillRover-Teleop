@@ -1,8 +1,12 @@
 # Planetary-DrillRover-Teleop
 
-An open-source, IPEx-inspired planetary rover analogue for sand-field mobility, drill-assisted soil interaction, and multimodal teleoperation experiments.
+An open-source, IPEx-inspired planetary rover analogue for sand-field mobility, drill-assisted soil interaction, multimodal teleoperation, and field-test data logging.
 
-This repository contains the mechanical design files, embedded firmware, Raspberry Pi software, data logging tools, and supporting documentation for a compact four-wheel skid-steer rover prototype. The platform is designed as a reproducible terrestrial analogue for space robotics education, prototyping, field testing, and human-in-the-loop control research.
+This repository supports the paper:
+
+**OS-Rover: An Open-Source Planetary Rover for Resource Prospecting with Drill-Assisted Sampling and Multimodal Teleoperation**
+
+The repository currently contains the STM32F407IGT6 firmware, Raspberry Pi software, SolidWorks mechanical source files, demonstration video, raw field-test logs, processed output plots, and paper figures used for the experimental analysis.
 
 > This project is a terrestrial research prototype inspired by publicly available IPEx/RASSOR-style excavation rover concepts. It is not a flight-ready spacecraft and is not an official NASA project.
 
@@ -10,21 +14,24 @@ This repository contains the mechanical design files, embedded firmware, Raspber
 
 ## 1. Project Overview
 
-The rover combines:
+OS-Rover is a compact four-wheel skid-steer rover prototype developed as a reproducible terrestrial analogue platform for space robotics education, prototyping, sand-field testing, and human-in-the-loop control research.
 
-- Four-wheel skid-steer mobility
-- Large-diameter modular wheels with replaceable tread segments
-- Drill-assisted soil loosening
-- Rotating collection-disc mechanism
-- Arm-assisted recovery and pit-escape capability
-- STM32F407IGT6-based real-time embedded control
-- Raspberry Pi 5 high-level computing layer
-- Gesture-based teleoperation using an Ethernet camera
-- Conventional radio control through FS-i6X / iA6B SBUS receiver
-- Optional Bluetooth smart-terminal command interface
-- Serial telemetry logging for field demonstrations
+The rover integrates:
 
-The prototype is intended for laboratory and sand-field experiments rather than vacuum, reduced-gravity, or radiation environments.
+* Four-wheel skid-steer mobility
+* Large-diameter modular wheels with replaceable tread segments
+* Drill-assisted soil loosening
+* Rotating collection-disc mechanism
+* Collection-module arm motion
+* Arm-assisted recovery and pit-escape capability
+* STM32F407IGT6-based real-time embedded control
+* Raspberry Pi 5 high-level computing
+* Vision-based gesture teleoperation
+* Conventional radio control through FS-i6X / iA6B SBUS receiver
+* Optional Bluetooth or terminal command interface
+* Serial telemetry logging for field demonstrations
+
+The prototype is intended for laboratory and sand-field experiments rather than vacuum, reduced-gravity, radiation, or flight environments.
 
 ---
 
@@ -34,19 +41,6 @@ The prototype is intended for laboratory and sand-field experiments rather than 
 Planetary-DrillRover-Teleop/
 ├── firmware/
 │   └── stm32f407igt6_rover_controller/
-│       ├── Drivers/
-│       ├── Inc/
-│       ├── Src/
-│       ├── MDK-ARM/
-│       ├── application/
-│       ├── bsp/
-│       ├── boards/
-│       ├── can.ioc
-│       └── keilkill.bat
-│
-├── mechanical/
-│   └── solidworks_source/
-│       └── SolidWorks source files for the rover mechanical design
 │
 ├── software/
 │   └── raspberry_pi/
@@ -54,73 +48,30 @@ Planetary-DrillRover-Teleop/
 │       ├── data_logger/
 │       └── gesture_control/
 │
+├── mechanical/
+│   └── solidworks_source/
+│
+├── data/
+│   ├── raw_logs/
+│   ├── processed_plots/
+│   └── paper_figures/
+│
+├── media/
+│   ├── os_rover_demo.mp4
+│   └── os_rover_demo_thumbnail.png
+│
 └── README.md
-````
-
-Planned or recommended folders for future release:
-
-```text
-electronics/
-├── wiring_diagrams/
-└── control_architecture/
-
-data/
-├── example_logs/
-└── processed_plots/
-
-docs/
-├── assembly_guide/
-├── operation_guide/
-└── troubleshooting/
 ```
 
 ---
 
-## 3. Hardware Architecture
+## 3. Demonstration Video
 
-### High-Level Computer
+The supplementary demonstration video is available below.
 
-- Raspberry Pi 5
-- Basler gesture-recognition camera connected through Ethernet
-- USB-to-TTL serial interface for communication with the STM32 controller
-- Optional Bluetooth smart-terminal bridge
+[![OS-Rover demonstration video](media/os_rover_demo_thumbnail.png)](media/os_rover_demo.mp4)
 
-### Embedded Controller
-
-- STM32F407IGT6 embedded controller
-- Real-time chassis control
-- SBUS receiver decoding
-- CAN actuator communication
-- UART command reception and telemetry output
-
-### Communication Interfaces
-
-| Interface  | Function                                          |
-| ---------- | ------------------------------------------------- |
-| UART6      | Raspberry Pi command input to STM32               |
-| UART1      | STM32 telemetry / feedback output to Raspberry Pi |
-| UART3      | SBUS input from iA6B receiver                     |
-| CAN1       | DJI M3508 chassis motor network                   |
-| CAN2       | Soil-working actuator network                     |
-| Ethernet   | Gesture camera to Raspberry Pi                    |
-| USB serial | Optional Bluetooth terminal bridge                |
-
-### Actuator Network
-
-| Actuator      | Interface | Function                                          |
-| ------------- | --------- | ------------------------------------------------- |
-| 4 × DJI M3508 | CAN1      | Four-wheel skid-steer chassis drive               |
-| DM4340 ID 1   | CAN2      | Left collection-disc drive                        |
-| DM4340 ID 2   | CAN2      | Right collection-disc drive                       |
-| DM4340 ID 3   | CAN2      | Collection-module arm actuator                    |
-| ZDT57         | CAN2      | Lead-screw drive for vertical drill-module motion |
-| ZDT42         | CAN2      | Drill rotation actuator                           |
-
-### Power System
-
-- Main power bus: 24 V
-- Raspberry Pi power: 24 V to 5 V buck converter
-- Motors and actuator drivers are powered from the 24 V system according to their voltage requirements
+The video presents 3D CAD model views, vision-based gesture control, collection-module arm motion, collection mechanism activation, four-wheel skid-steer mobility, drill-assisted soil interaction, pit-escape recovery, and telemetry feedback from the field tests.
 
 ---
 
@@ -132,17 +83,16 @@ The STM32 firmware is located in:
 firmware/stm32f407igt6_rover_controller/
 ```
 
-Main functions include:
+The firmware includes:
 
-- Four-wheel chassis speed control
-- CAN1 communication with DJI M3508 motors
-- CAN2 communication with DM4340 and ZDT closed-loop stepper actuators
-- FS-i6X / iA6B SBUS receiver decoding
-- Raspberry Pi serial command parsing
-- Command arbitration between radio control and vision-based control
-- Telemetry output for experiment logging
+* Four-wheel chassis control
+* CAN actuator control
+* FS-i6X / iA6B SBUS receiver decoding
+* Raspberry Pi serial command parsing
+* Command arbitration between radio control and high-level commands
+* Telemetry output for experiment logging
 
-The project is currently configured for Keil MDK-ARM and STM32CubeMX.
+The project is configured for the STM32F407IGT6 controller and is organized as an STM32CubeMX / Keil MDK-ARM project.
 
 ---
 
@@ -154,31 +104,17 @@ The Raspberry Pi software is located in:
 software/raspberry_pi/
 ```
 
-### `gesture_control/`
+The current software folders include:
 
-Gesture-recognition program for converting camera-based hand gestures into high-level rover commands.
+* `gesture_control/`: vision-based gesture-control program
+* `bluetooth_bridge/`: Bluetooth or terminal command bridge
+* `data_logger/`: Python-based experiment logging scripts
 
-### `bluetooth_bridge/`
-
-Optional Bluetooth-to-serial bridge for smart-terminal command input.
-
-### `data_logger/`
-
-Python-based serial data logger for recording STM32 telemetry during field demonstrations.
-
-Typical logged data include:
-
-- Wheel target speed
-- Wheel measured speed
-- Arm feedback
-- Drill command state
-- Collection-disc command state
-- Control source
-- Remote-control channel values
+The Raspberry Pi 5 is used for high-level command generation, gesture recognition, serial communication, and experiment data logging.
 
 ---
 
-## 6. Mechanical Design
+## 6. Mechanical Source Files
 
 The mechanical source files are located in:
 
@@ -186,45 +122,82 @@ The mechanical source files are located in:
 mechanical/solidworks_source/
 ```
 
-This folder contains the original SolidWorks source files, including part files and assembly files.
+This folder contains the SolidWorks source files for the rover mechanical design, including the rover structure and functional modules.
 
-Important file types:
+The released mechanical files include source models related to:
 
-| File type        | Meaning                     |
-| ---------------- | --------------------------- |
-| `.SLDPRT`        | SolidWorks part file        |
-| `.SLDASM`        | SolidWorks assembly file    |
-| `.SLDDRW`        | SolidWorks drawing file     |
-| `.STEP` / `.STP` | General CAD exchange format |
-| `.STL`           | Mesh format for 3D printing |
+* Rover chassis structure
+* Wheel modules
+* Drill mechanism
+* Collection mechanism
+* Collection-module arm structure
 
-For best compatibility, future releases should include exported STEP files for the main assembly and key modules, as well as STL files for printable parts.
+These files are provided as the current mechanical source release. Neutral CAD formats such as STEP files and printable STL files may be added in future updates.
 
 ---
 
-## 7. Demonstration Scenarios
+## 7. Experimental Data and Result Plots
 
-The rover is evaluated in three representative sand-field scenarios:
-
-1. **Flat sand demonstration**
-   Basic mobility, drill-assisted soil loosening, and collection mechanism operation.
-
-2. **Slope traversal demonstration**
-   Slope mobility with arm posture and collection-disc assistance.
-
-3. **Pit escape demonstration**
-   Recovery behavior using short bursts of mobility, drill operation, arm deployment, and collection-disc actuation.
-
-Processed plots and example logs will be placed in:
+The experimental data are located in:
 
 ```text
-data/example_logs/
-data/processed_plots/
+data/
+├── raw_logs/
+├── processed_plots/
+└── paper_figures/
 ```
+
+* `raw_logs/` contains the original CSV telemetry logs recorded during field tests.
+* `processed_plots/` contains output plots generated from the recorded log data.
+* `paper_figures/` contains the final processed figures used in the paper.
+
+The released data correspond to three field-test scenarios:
+
+1. Flat-sand mobility and collection test
+2. Slope-sand traversal test
+3. Pit-escape recovery test
+
+The logs include telemetry information such as wheel commands, control source, drill command, collection-disc command, collection-module arm state, and actuator feedback.
 
 ---
 
-## 8. Getting Started
+## 8. Example Result Figures
+
+### Flat-Sand Test
+
+![Flat-sand test result](data/processed_plots/flat_sand_feedback_plot.png)
+
+### Slope-Traversal Test
+
+![Slope-traversal test result](data/processed_plots/slope_sand_feedback_plot.png)
+
+### Pit-Escape Test
+
+![Pit-escape test result](data/processed_plots/pit_escape_feedback_plot.png)
+
+### Paper Figure
+
+![Paper figure: three-scenario telemetry feedback](data/paper_figures/three_scenario_telemetry_feedback.png)
+
+---
+
+## 9. Field-Test Scenarios
+
+### Flat-Sand Mobility and Collection Test
+
+This scenario evaluates basic mobility, drill-assisted soil interaction, and collection-related actuation on flat sand.
+
+### Slope-Sand Traversal Test
+
+This scenario evaluates rover motion on inclined sandy terrain while recording the activity of the chassis and soil-working mechanisms.
+
+### Pit-Escape Recovery Test
+
+This scenario evaluates recovery behavior using coordinated chassis motion, drill actuation, collection-module arm motion, and collection mechanism activation.
+
+---
+
+## 10. Getting Started
 
 ### Clone the repository
 
@@ -233,7 +206,7 @@ git clone https://github.com/ZhenzheXu/Planetary-DrillRover-Teleop.git
 cd Planetary-DrillRover-Teleop
 ```
 
-### Open STM32 firmware
+### Open the STM32 firmware
 
 Open the Keil project inside:
 
@@ -241,7 +214,7 @@ Open the Keil project inside:
 firmware/stm32f407igt6_rover_controller/MDK-ARM/
 ```
 
-or open the CubeMX configuration file:
+or open the STM32CubeMX configuration file:
 
 ```text
 firmware/stm32f407igt6_rover_controller/can.ioc
@@ -255,31 +228,31 @@ Raspberry Pi scripts are organized under:
 software/raspberry_pi/
 ```
 
-Detailed setup instructions will be added in the operation guide.
+The gesture-control, Bluetooth bridge, and data-logging scripts are provided as the current high-level software release.
 
 ---
 
-## 9. Status
+## 11. Current Release Status
 
 This repository is under active development.
 
-Current release status:
+Current release contents:
 
-- [x] STM32F407IGT6 firmware structure added
-- [x] Raspberry Pi software folders created
-- [x] SolidWorks mechanical source folder created
-- [ ] STEP release files to be added
-- [ ] STL printable parts to be added
-- [ ] Wiring diagrams to be added
-- [ ] Example field-test logs to be added
-- [ ] Processed plots to be added
-- [ ] Assembly and operation guides to be added
+* [x] STM32F407IGT6 rover-control firmware
+* [x] Raspberry Pi software folders
+* [x] SolidWorks mechanical source files
+* [x] Demonstration video
+* [x] Raw field-test logs
+* [x] Processed output plots
+* [x] Paper figures used for experimental analysis
+
+Future updates may include additional wiring diagrams, neutral CAD exchange files, printable STL files, assembly notes, and extended operation documentation.
 
 ---
 
-## 10. Citation
+## 12. Citation
 
-If you use this project in academic work, please cite the corresponding paper or this repository.
+If you use this repository in academic work, please cite the related paper or this repository.
 
 ```bibtex
 @misc{xu_planetary_drill_rover_2026,
@@ -293,17 +266,17 @@ If you use this project in academic work, please cite the corresponding paper or
 
 ---
 
-## 11. License
+## 13. License
 
-A license file will be added before the public release.
+A license file will be added before the final public release.
 
-Recommended structure:
+Recommended license structure:
 
-- Firmware and software: MIT License or Apache-2.0
-- Mechanical design files: CERN Open Hardware Licence or Creative Commons Attribution license
+* Firmware and software: MIT License or Apache-2.0
+* Mechanical design files: CERN Open Hardware Licence or Creative Commons Attribution license
 
 ---
 
-## 12. Safety Warning
+## 14. Safety Warning
 
 This project is a research prototype intended for education, experimentation, and prototyping. It must be operated only by trained personnel in a controlled environment. Users are fully responsible for safe assembly, wiring, battery handling, and field operation. Do not operate the rover near people, unstable terrain, or hazardous conditions. The prototype is not intended for spaceflight, human-rated operation, or use in hazardous environments.
